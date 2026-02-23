@@ -57,24 +57,30 @@ t_lst	*create_lst(int nb, t_coder_config *coders)
 
 static void	queue_edf(t_lst **queue)
 {
-	t_lst			*current;
-	t_lst			*best;
+	t_lst			*i;
+	t_lst			*j;
+	t_lst			*min;
 	t_coder_config	*tmp;
 
-	best = *queue;
-	current = (*queue)->next;
-	while (current)
+	i = *queue;
+	while (i)
 	{
-		if (get_deadline_edf(current->coder)
-			< get_deadline_edf(best->coder))
-			best = current;
-		current = current->next;
-	}
-	if (best != *queue)
-	{
-		tmp = (*queue)->coder;
-		(*queue)->coder = best->coder;
-		best->coder = tmp;
+		min = i;
+		j = i->next;
+		while (j)
+		{
+			if (get_deadline_edf(j->coder)
+				< get_deadline_edf(min->coder))
+				min = j;
+			j = j->next;
+		}
+		if (min != i)
+		{
+			tmp = i->coder;
+			i->coder = min->coder;
+			min->coder = tmp;
+		}
+		i = i->next;
 	}
 }
 

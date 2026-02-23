@@ -12,6 +12,8 @@
 
 #ifndef DATA_STRUCTURES_H
 # define DATA_STRUCTURES_H
+# define _DEFAULT_SOURCE
+# define _XOPEN_SOURCE 500
 # include <sys/time.h>
 # include <pthread.h>
 # include <stdbool.h>
@@ -73,12 +75,6 @@ typedef struct s_coder_config
 	int						request_time;
 	bool					has_lock;
 }	t_coder_config;
-
-typedef struct s_time
-{
-	struct timeval		vt;
-	struct timezone		tz;
-}	t_time;
 
 void	*coder_thread(void	*arg);
 int		log_message(char *msg, int id);

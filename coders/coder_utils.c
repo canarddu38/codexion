@@ -6,7 +6,7 @@
 /*   By: julcleme <julcleme@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/22 01:55:00 by julcleme          #+#    #+#             */
-/*   Updated: 2026/02/23 15:25:10 by julcleme         ###   ########lyon.fr   */
+/*   Updated: 2026/02/23 20:50:57 by julcleme         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,13 @@ int	log_message(char *msg, int id)
 	static size_t			start_time;
 	static pthread_mutex_t	log_mutex = PTHREAD_MUTEX_INITIALIZER;
 	static bool				finished;
-	t_time					t;
+	struct timeval			vt;
 
 	pthread_mutex_lock(&log_mutex);
-	gettimeofday(&t.vt, &t.tz);
+	gettimeofday(&vt, 0);
 	if (start_time == 0)
-		start_time = t.vt.tv_sec * 1000 + t.vt.tv_usec / 1000;
-	curr_time = t.vt.tv_sec * 1000 + t.vt.tv_usec / 1000;
+		start_time = vt.tv_sec * 1000 + vt.tv_usec / 1000;
+	curr_time = vt.tv_sec * 1000 + vt.tv_usec / 1000;
 	if (id > -1 && msg && !finished)
 		printf("%lu %i %s\n", (curr_time - start_time), id, msg);
 	if (msg && !strcmp(msg, "burned out"))

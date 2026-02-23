@@ -1,4 +1,4 @@
-CFLAGS		= -Wall -Wextra -Werror -pthread
+CFLAGS		= -Wall -Wextra -Werror -std=c89 -pthread
 NAME		= codexion
 CFILES		= main.c \
 			  coder.c \
@@ -7,19 +7,21 @@ CFILES		= main.c \
 			  data_structures.c \
 			  parser.c
 
-OFILES		= $(CFILES:.c=.o)
-DFILES		= $(CFILES:.c=.d)
+OBJDIR		= obj
+OFILES		= $(CFILES:%.c=$(OBJDIR)/%.o)
+DFILES		= $(CFILES:%.c=$(OBJDIR)/%.d)
 
 all: $(NAME)
 
 $(NAME): $(OFILES)
 	$(CC) $(CFLAGS) $^ -o $@
 
-%.o: %.c
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 clean:
-	rm -rf $(OFILES) $(DFILES)
+	rm -rf $(OBJDIR) $(DFILES)
 
 fclean: clean
 	rm -rf $(NAME)
