@@ -30,27 +30,39 @@ static int	check_stop(t_coder_config *conf, int i)
 static int	check_burnout(t_coder_config *conf,
 	int i, int current_time)
 {
-	if (current_time - conf[i].last_time_compiled
+	int	last_time;
+
+	pthread_mutex_lock(&conf[i].time_mutex);
+	last_time = conf[i].last_time_compiled;
+	pthread_mutex_unlock(&conf[i].time_mutex);
+	if (current_time - last_time
 		>= conf->program_args.time_to_burnout)
 	{
 		pthread_mutex_lock(&conf[i].scheduler_mutex->mutex);
 		conf[i].scheduler_mutex->stop_simulation = 1;
-		pthread_cond_broadcast(
-			&conf[i].scheduler_mutex->cond);
-		pthread_mutex_unlock(
-			&conf[i].scheduler_mutex->mutex);
+		pthread_cond_broadcast(&conf[i].scheduler_mutex->cond);
+		pthread_mutex_unlock(&conf[i].scheduler_mutex->mutex);
 		log_message("burned out", conf[i].id);
 		return (1);
 	}
 	return (0);
 }
 
-void	stop_coders(t_coder_config *conf)
+int	stop_coders(t_coder_config *conf)
 {
 	pthread_mutex_lock(&conf->scheduler_mutex->mutex);
 	conf->scheduler_mutex->stop_simulation = 1;
 	pthread_cond_broadcast(&conf->scheduler_mutex->cond);
 	pthread_mutex_unlock(&conf->scheduler_mutex->mutex);
+	return (0);
+}
+
+static void	queue_move(t_coder_config	*conf)
+{
+	pthread_mutex_lock(&conf->scheduler_mutex->mutex);
+	pthread_cond_broadcast(&conf->scheduler_mutex->cond);
+	pthread_mutex_unlock(&conf->scheduler_mutex->mutex);
+	usleep(10);
 }
 
 void	*monitor_thread(void *arg)
@@ -70,14 +82,14 @@ void	*monitor_thread(void *arg)
 		{
 			if (check_stop(conf, i) || check_burnout(conf, i, current_time))
 				return (0);
+			pthread_mutex_lock(&conf[i].time_mutex);
 			if (conf[i].compiled < conf->program_args.nb_compiles_required)
 				finished = 0;
+			pthread_mutex_unlock(&conf[i].time_mutex);
 		}
 		if (finished)
 			break ;
-		pthread_cond_broadcast(&conf->scheduler_mutex->cond);
-		usleep(10);
+		queue_move(conf);
 	}
-	stop_coders(conf);
-	return (0);
+	return ((void *)(long)stop_coders(conf));
 }

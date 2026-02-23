@@ -6,7 +6,7 @@
 /*   By: julcleme <julcleme@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/22 01:55:00 by julcleme          #+#    #+#             */
-/*   Updated: 2026/02/23 12:15:06 by julcleme         ###   ########lyon.fr   */
+/*   Updated: 2026/02/23 15:25:10 by julcleme         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,22 @@
 
 int	log_message(char *msg, int id)
 {
-	size_t				curr_time;
-	static size_t		start_time;
-	static bool			finished;
-	struct timeval		vt;
-	struct timezone		tz;
+	size_t					curr_time;
+	static size_t			start_time;
+	static pthread_mutex_t	log_mutex = PTHREAD_MUTEX_INITIALIZER;
+	static bool				finished;
+	t_time					t;
 
-	gettimeofday(&vt, &tz);
+	pthread_mutex_lock(&log_mutex);
+	gettimeofday(&t.vt, &t.tz);
 	if (start_time == 0)
-		start_time = vt.tv_sec * 1000 + vt.tv_usec / 1000;
-	curr_time = vt.tv_sec * 1000 + vt.tv_usec / 1000;
+		start_time = t.vt.tv_sec * 1000 + t.vt.tv_usec / 1000;
+	curr_time = t.vt.tv_sec * 1000 + t.vt.tv_usec / 1000;
 	if (id > -1 && msg && !finished)
 		printf("%lu %i %s\n", (curr_time - start_time), id, msg);
 	if (msg && !strcmp(msg, "burned out"))
 		finished = true;
+	pthread_mutex_unlock(&log_mutex);
 	return (curr_time - start_time);
 }
 
@@ -92,8 +94,11 @@ current_time + conf->program_args.dongle_cooldown;
 	conf->scheduler_mutex->dongle_state[conf->id
 		% conf->program_args.nb_coders] = 0;
 	conf->state = DEBUG;
+	pthread_mutex_lock(&conf->time_mutex);
 	conf->last_time_compiled = current_time
 		+ conf->program_args.time_to_compile;
+	conf->compiled++;
+	pthread_mutex_unlock(&conf->time_mutex);
 	if (conf->program_args.nb_coders > 1)
 		queue_circle_next(&(conf->scheduler_mutex->queue),
 			conf->program_args.scheduler);

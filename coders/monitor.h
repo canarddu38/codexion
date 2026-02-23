@@ -16,6 +16,6 @@
 # include "data_structures.h"
 
 void	*monitor_thread(void *arg);
-void	stop_coders(t_coder_config *conf);
+int		stop_coders(t_coder_config *conf);
 
 #endif

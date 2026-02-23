@@ -21,27 +21,27 @@ int	cleanup(t_args *args, pthread_mutex_t *dongles,
 {
 	int	i;
 
+	if (conf && scheduler)
+		stop_coders(conf);
+	i = 0;
+	while (conf && i < args->nb_coders)
+		pthread_mutex_destroy(&conf[i++].time_mutex);
+	if (conf)
+		free(conf);
 	i = 0;
 	while (dongles && i < args->nb_coders)
-		pthread_mutex_destroy(&(dongles[i++]));
+		pthread_mutex_destroy(&dongles[i++]);
 	if (dongles)
 		free(dongles);
-	if (conf)
-	{
-		if (scheduler)
-			stop_coders(conf);
-		free(conf);
-	}
-	if (scheduler)
-	{
-		pthread_mutex_destroy(&scheduler->mutex);
-		pthread_cond_destroy(&scheduler->cond);
-		free_lst(scheduler->queue);
-		if (scheduler->dongle_state)
-			free(scheduler->dongle_state);
-		if (scheduler->dongle_release)
-			free(scheduler->dongle_release);
-	}
+	if (!scheduler)
+		return (0);
+	pthread_mutex_destroy(&scheduler->mutex);
+	pthread_cond_destroy(&scheduler->cond);
+	free_lst(scheduler->queue);
+	if (scheduler->dongle_state)
+		free(scheduler->dongle_state);
+	if (scheduler->dongle_release)
+		free(scheduler->dongle_release);
 	return (0);
 }
 
@@ -89,7 +89,8 @@ static int	coders_init(t_args *args, pthread_mutex_t *dongles,
 		conf[i].state = COMPILE;
 		conf[i].program_args = *args;
 		conf[i].scheduler_mutex = sch;
-		if (pthread_mutex_init(&dongles[i++], 0))
+		if (pthread_mutex_init(&conf[i].time_mutex, 0)
+			|| pthread_mutex_init(&dongles[i++], 0))
 			return (1);
 	}
 	return (0);
@@ -109,12 +110,12 @@ static int	init_threads(t_coder_config *conf, t_args *args)
 	{
 		if (pthread_create(&(conf[i].thread), 0, coder_thread, &conf[i]))
 		{
-			failed_idx = i + 0 * puterr("Could not initialise coder threads\n");
+			failed_idx = i + stop_coders(conf) * puterr("Threads failed\n");
 			break ;
 		}
 	}
 	i = 0;
-	while (i < args->nb_coders && (failed_idx != 0 || (i < failed_idx)))
+	while (i < args->nb_coders && (failed_idx == -1 || (i < failed_idx)))
 	{
 		if (pthread_join(conf[i++].thread, 0))
 			return (puterr("Could not join coder threads\n"));

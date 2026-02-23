@@ -66,12 +66,19 @@ typedef struct s_coder_config
 	pthread_t				thread;
 	t_args					program_args;
 	t_coder_state			state;
+	pthread_mutex_t			time_mutex;
 	pthread_mutex_t			*dongles;
 	pthread_cond_t			cond;
 	t_scheduler				*scheduler_mutex;
 	int						request_time;
 	bool					has_lock;
 }	t_coder_config;
+
+typedef struct s_time
+{
+	struct timeval		vt;
+	struct timezone		tz;
+}	t_time;
 
 void	*coder_thread(void	*arg);
 int		log_message(char *msg, int id);
