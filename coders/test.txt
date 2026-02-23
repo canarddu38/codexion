@@ -1,0 +1,90 @@
+0 1 has taken a dongle
+0 1 has taken a dongle
+0 1 is compiling
+0 3 has taken a dongle
+0 3 has taken a dongle
+0 3 is compiling
+0 5 has taken a dongle
+0 5 has taken a dongle
+0 5 is compiling
+0 9 has taken a dongle
+0 9 has taken a dongle
+0 9 is compiling
+0 7 has taken a dongle
+0 7 has taken a dongle
+0 7 is compiling
+0 11 has taken a dongle
+0 15 has taken a dongle
+0 11 has taken a dongle
+0 15 has taken a dongle
+0 13 has taken a dongle
+0 13 has taken a dongle
+0 13 is compiling
+0 15 is compiling
+0 11 is compiling
+0 17 has taken a dongle
+0 17 has taken a dongle
+0 17 is compiling
+0 19 has taken a dongle
+0 19 has taken a dongle
+0 19 is compiling
+10 1 is debugging
+10 3 is debugging
+10 2 has taken a dongle
+10 2 has taken a dongle
+10 2 is compiling
+10 5 is debugging
+10 4 has taken a dongle
+10 4 has taken a dongle
+10 4 is compiling
+10 9 is debugging
+10 7 is debugging
+10 6 has taken a dongle
+10 6 has taken a dongle
+10 6 is compiling
+10 8 has taken a dongle
+10 8 has taken a dongle
+10 8 is compiling
+10 11 is debugging
+10 13 is debugging
+10 10 has taken a dongle
+10 10 has taken a dongle
+10 10 is compiling
+10 17 is debugging
+10 12 has taken a dongle
+10 12 has taken a dongle
+10 12 is compiling
+10 15 is debugging
+10 14 has taken a dongle
+10 14 has taken a dongle
+10 14 is compiling
+10 16 has taken a dongle
+10 16 has taken a dongle
+10 16 is compiling
+10 19 is debugging
+10 18 has taken a dongle
+10 18 has taken a dongle
+10 18 is compiling
+10 20 has taken a dongle
+10 20 has taken a dongle
+10 20 is compiling
+20 1 is refactoring
+20 3 is refactoring
+20 2 is debugging
+20 5 is refactoring
+20 7 is refactoring
+20 4 is debugging
+20 9 is refactoring
+20 6 is debugging
+20 8 is debugging
+20 11 is refactoring
+20 13 is refactoring
+20 10 is debugging
+20 17 is refactoring
+20 12 is debugging
+20 15 is refactoring
+20 14 is debugging
+20 16 is debugging
+20 19 is refactoring
+20 18 is debugging
+20 20 is debugging

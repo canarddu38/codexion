@@ -6,7 +6,7 @@
 /*   By: julcleme <julcleme@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/22 01:55:00 by julcleme          #+#    #+#             */
-/*   Updated: 2026/02/22 15:58:50 by julcleme         ###   ########lyon.fr   */
+/*   Updated: 2026/02/23 12:15:06 by julcleme         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,9 +104,27 @@ current_time + conf->program_args.dongle_cooldown;
 bool	is_coder_busy(t_coder_config *me,
 	int first_dongle, int second_dongle, size_t current_time)
 {
-	if (me->program_args.scheduler == SCHEDULER_FIFO
-		&& me->scheduler_mutex->queue->coder->id != me->id)
-		return (true);
+	t_lst	*current;
+	int		coder_dongles[2];
+
+	if (me->program_args.scheduler == SCHEDULER_FIFO)
+	{
+		current = me->scheduler_mutex->queue;
+		while (current)
+		{
+			coder_dongles[0] = current->coder->id
+				% current->coder->program_args.nb_coders;
+			coder_dongles[1] = current->coder->id - 1;
+			if (current->coder->state == COMPILE
+				&& (coder_dongles[0] == first_dongle
+					|| coder_dongles[1] == first_dongle
+					|| coder_dongles[0] == second_dongle
+					|| coder_dongles[1] == second_dongle)
+				&& current->coder->request_time < me->request_time)
+				return (true);
+			current = current->next;
+		}
+	}
 	return (me->scheduler_mutex->dongle_state[first_dongle]
 		|| me->scheduler_mutex->dongle_state[second_dongle]
 		|| current_time < me->scheduler_mutex->dongle_release[first_dongle]

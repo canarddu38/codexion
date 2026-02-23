@@ -27,7 +27,11 @@ int	cleanup(t_args *args, pthread_mutex_t *dongles,
 	if (dongles)
 		free(dongles);
 	if (conf)
+	{
+		if (scheduler)
+			stop_coders(conf);
 		free(conf);
+	}
 	if (scheduler)
 	{
 		pthread_mutex_destroy(&scheduler->mutex);
@@ -93,26 +97,31 @@ static int	coders_init(t_args *args, pthread_mutex_t *dongles,
 
 static int	init_threads(t_coder_config *conf, t_args *args)
 {
-	pthread_t		monitor;
-	int				i;
+	pthread_t	monitor;
+	int			i;
+	int			failed_idx;
 
 	if (pthread_create(&monitor, 0, monitor_thread, &conf))
 		return (puterr("Could not initialise monitor thread\n"));
 	i = -1;
+	failed_idx = -1;
 	while (++i < args->nb_coders)
 	{
 		if (pthread_create(&(conf[i].thread), 0, coder_thread, &conf[i]))
-			return (puterr("Could not initialise coder threads\n"));
+		{
+			failed_idx = i + 0 * puterr("Could not initialise coder threads\n");
+			break ;
+		}
 	}
 	i = 0;
-	while (i < args->nb_coders)
+	while (i < args->nb_coders && (failed_idx != 0 || (i < failed_idx)))
 	{
 		if (pthread_join(conf[i++].thread, 0))
 			return (puterr("Could not join coder threads\n"));
 	}
 	if (pthread_join(monitor, 0))
 		return (puterr("Could not join monitor thread\n"));
-	return (0);
+	return (failed_idx != -1);
 }
 
 int	main(int argc, char **argv)

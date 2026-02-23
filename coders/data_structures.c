@@ -55,11 +55,6 @@ t_lst	*create_lst(int nb, t_coder_config *coders)
 	return (output);
 }
 
-int	get_deadline_edf(t_coder_config *coder)
-{
-	return (coder->last_time_compiled + coder->program_args.time_to_burnout);
-}
-
 static void	queue_edf(t_lst **queue)
 {
 	t_lst			*current;
@@ -83,23 +78,41 @@ static void	queue_edf(t_lst **queue)
 	}
 }
 
-void	queue_circle_next(t_lst **queue, t_scheduler_type type)
+static void	queue_fifo_sort(t_lst **queue, t_coder_config	*tmp)
 {
-	t_lst	*first;
-	t_lst	*last;
+	t_lst			*current;
+	t_lst			*min;
+	t_lst			*iter;
 
 	if (!queue || !*queue || !(*queue)->next)
 		return ;
-	if (type == SCHEDULER_FIFO)
+	current = *queue;
+	while (current)
 	{
-		first = *queue;
-		*queue = first->next;
-		first->next = 0;
-		last = *queue;
-		while (last->next)
-			last = last->next;
-		last->next = first;
+		min = current;
+		iter = current->next;
+		while (iter)
+		{
+			if (iter->coder->request_time < min->coder->request_time)
+				min = iter;
+			iter = iter->next;
+		}
+		if (min != current)
+		{
+			tmp = current->coder;
+			current->coder = min->coder;
+			min->coder = tmp;
+		}
+		current = current->next;
 	}
+}
+
+void	queue_circle_next(t_lst **queue, t_scheduler_type type)
+{
+	if (!queue || !*queue || !(*queue)->next)
+		return ;
+	if (type == SCHEDULER_FIFO)
+		queue_fifo_sort(queue, 0);
 	else if (type == SCHEDULER_EDF)
 		queue_edf(queue);
 }

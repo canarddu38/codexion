@@ -17,6 +17,11 @@
 #include <string.h>
 #include <stdbool.h>
 
+int	get_deadline_edf(t_coder_config *coder)
+{
+	return (coder->last_time_compiled + coder->program_args.time_to_burnout);
+}
+
 static int	coder_compile(t_coder_config *conf,
 	pthread_mutex_t *first_mutex,
 	pthread_mutex_t *second_mutex, bool one_coder)
@@ -94,9 +99,9 @@ void	*coder_thread(void	*arg)
 		first_mutex = &conf->dongles[second_idx];
 		second_mutex = &conf->dongles[first_idx];
 	}
+	usleep(100 * (conf->id % 2 == 0));
 	conf->request_time = log_message(0, -1);
-	while (conf->compiled < conf->program_args.nb_compiles_required
-		&& !coder_iteration(conf, first_mutex, second_mutex,
+	while (!coder_iteration(conf, first_mutex, second_mutex,
 			(first_idx == second_idx)))
 		continue ;
 	return (0);

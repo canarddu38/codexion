@@ -45,6 +45,14 @@ static int	check_burnout(t_coder_config *conf,
 	return (0);
 }
 
+void	stop_coders(t_coder_config *conf)
+{
+	pthread_mutex_lock(&conf->scheduler_mutex->mutex);
+	conf->scheduler_mutex->stop_simulation = 1;
+	pthread_cond_broadcast(&conf->scheduler_mutex->cond);
+	pthread_mutex_unlock(&conf->scheduler_mutex->mutex);
+}
+
 void	*monitor_thread(void *arg)
 {
 	t_coder_config	*conf;
@@ -70,6 +78,6 @@ void	*monitor_thread(void *arg)
 		pthread_cond_broadcast(&conf->scheduler_mutex->cond);
 		usleep(10);
 	}
-	conf->scheduler_mutex->stop_simulation = 1;
+	stop_coders(conf);
 	return (0);
 }
