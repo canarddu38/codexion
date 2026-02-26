@@ -2,6 +2,9 @@
 
 # Codexion
 
+[![compilation](https://github.com/canarddu38/codexion/actions/workflows/compilation.yml/badge.svg)](https://github.com/canarddu38/codexion/actions/workflows/compilation.yml)
+[![norm](https://github.com/canarddu38/codexion/actions/workflows/norm.yml/badge.svg)](https://github.com/canarddu38/codexion/actions/workflows/norm.yml)
+
 ## Description
 
 Codexion is a multithreaded concurrency simulation written in C using POSIX threads (`pthread`).  
@@ -371,5 +374,6 @@ Codexion demonstrates advanced control over:
 - Starvation prevention
 - Safe thread lifecycle management
 - Deterministic concurrent logging
+
 
 This project emphasizes correctness, robustness, and clean concurrent system architecture — essential skills in systems programming.
