@@ -55,32 +55,32 @@ t_lst	*create_lst(int nb, t_coder_config *coders)
 	return (output);
 }
 
-static void	queue_edf(t_lst **queue)
+static void	queue_edf_sort(t_lst **queue, int swap)
 {
 	t_lst			*i;
-	t_lst			*j;
-	t_lst			*min;
 	t_coder_config	*tmp;
+	int				deadlines[3];
 
-	i = *queue;
-	while (i)
+	while (swap)
 	{
-		min = i;
-		j = i->next;
-		while (j)
+		swap = 0;
+		i = *queue;
+		while (i && i->next)
 		{
-			if (get_deadline_edf(j->coder)
-				< get_deadline_edf(min->coder))
-				min = j;
-			j = j->next;
+			deadlines[0] = get_deadline_edf(i->coder);
+			deadlines[1] = get_deadline_edf(i->next->coder);
+			if (deadlines[1] < deadlines[0] || (deadlines[1] == deadlines[0]
+					&& ((i->next->coder->id % 2 > i->coder->id % 2)
+						|| (i->next->coder->id % 2 == i->coder->id % 2
+							&& i->next->coder->id < i->coder->id))))
+			{
+				tmp = i->coder;
+				i->coder = i->next->coder;
+				i->next->coder = tmp;
+				swap = 1;
+			}
+			i = i->next;
 		}
-		if (min != i)
-		{
-			tmp = i->coder;
-			i->coder = min->coder;
-			min->coder = tmp;
-		}
-		i = i->next;
 	}
 }
 
@@ -120,5 +120,5 @@ void	queue_circle_next(t_lst **queue, t_scheduler_type type)
 	if (type == SCHEDULER_FIFO)
 		queue_fifo_sort(queue, 0);
 	else if (type == SCHEDULER_EDF)
-		queue_edf(queue);
+		queue_edf_sort(queue, 1);
 }
