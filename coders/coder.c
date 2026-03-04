@@ -48,7 +48,9 @@ static int	coder_compile(t_coder_config *conf,
 	}
 	pthread_mutex_lock(second_mutex);
 	log_message("has taken a dongle", conf->id);
-	log_message("is compiling", conf->id);
+	pthread_mutex_lock(&conf->time_mutex);
+	conf->last_time_compiled = log_message("is compiling", conf->id);
+	pthread_mutex_unlock(&conf->time_mutex);
 	usleep(conf->program_args.time_to_compile * 1000);
 	pthread_mutex_unlock(first_mutex);
 	pthread_mutex_unlock(second_mutex);
@@ -105,12 +107,11 @@ void	*coder_thread(void	*arg)
 		first_mutex = &conf->dongles[idx[1]];
 		second_mutex = &conf->dongles[idx[0]];
 	}
-	usleep(100 * (conf->id % 2 == 0));
 	pthread_mutex_lock(&conf->scheduler_mutex->mutex);
 	conf->request_time = log_message(0, -1);
 	pthread_mutex_unlock(&conf->scheduler_mutex->mutex);
-	while (!coder_iteration(conf, first_mutex, second_mutex, \
-(idx[0] == idx[1])))
+	usleep(2000 * (conf->id % 2 == 0));
+	while (!coder_iteration(conf, first_mutex, second_mutex, idx[0] == idx[1]))
 		continue ;
 	return (0);
 }

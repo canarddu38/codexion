@@ -6,7 +6,7 @@
 /*   By: julcleme <julcleme@student.42lyon.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/22 01:55:00 by julcleme          #+#    #+#             */
-/*   Updated: 2026/02/23 20:50:57 by julcleme         ###   ########lyon.fr   */
+/*   Updated: 2026/03/04 14:09:28 by julcleme         ###   ########lyon.fr   */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,29 +35,29 @@ int	log_message(char *msg, int id)
 
 bool	can_compile(t_coder_config *me)
 {
-	int				deadline;
-	int				first_dongle;
-	int				second_dongle;
-	size_t			current_time;
-	t_lst			*current;
+	int		dongles[4];
+	size_t	current_time;
+	t_lst	*current;
 
-	first_dongle = me->id - 1;
-	second_dongle = me->id % me->program_args.nb_coders;
+	dongles[0] = me->id - 1;
+	dongles[1] = me->id % me->program_args.nb_coders;
 	current_time = log_message(0, -1);
-	if (is_coder_busy(me, first_dongle, second_dongle, current_time))
+	if (is_coder_busy(me, dongles[0], dongles[1], current_time))
 		return (false);
 	if (me->program_args.scheduler == SCHEDULER_EDF)
 	{
 		current = me->scheduler_mutex->queue;
-		deadline = get_deadline_edf(current->coder)
-			+ me->program_args.time_to_compile;
-		while (current && get_deadline_edf(current->coder) <= deadline)
+		while (current)
 		{
-			if (me->id == current->coder->id)
-				return (true);
+			dongles[2] = current->coder->id - 1;
+			dongles[3] = current->coder->id % me->program_args.nb_coders;
+			if (current->coder->state == COMPILE && (dongles[2] == dongles[0]
+					|| dongles[3] == dongles[1]
+					|| dongles[2] == dongles[1]
+					|| dongles[3] == dongles[0]))
+				return (me->id == current->coder->id);
 			current = current->next;
 		}
-		return (false);
 	}
 	return (true);
 }
@@ -65,9 +65,17 @@ bool	can_compile(t_coder_config *me)
 void	scheduler_wait(t_coder_config *conf)
 {
 	pthread_mutex_lock(&conf->scheduler_mutex->mutex);
+	if (conf->program_args.nb_coders > 1)
+		queue_circle_next(&(conf->scheduler_mutex->queue),
+			conf->program_args.scheduler);
 	while (!can_compile(conf) && !conf->scheduler_mutex->stop_simulation)
+	{
 		pthread_cond_wait(&conf->scheduler_mutex->cond,
 			&conf->scheduler_mutex->mutex);
+		if (conf->program_args.nb_coders > 1)
+			queue_circle_next(&(conf->scheduler_mutex->queue),
+				conf->program_args.scheduler);
+	}
 	if (!conf->scheduler_mutex->stop_simulation)
 	{
 		conf->has_lock = true;
@@ -94,14 +102,7 @@ current_time + conf->program_args.dongle_cooldown;
 	conf->scheduler_mutex->dongle_state[conf->id
 		% conf->program_args.nb_coders] = 0;
 	conf->state = DEBUG;
-	pthread_mutex_lock(&conf->time_mutex);
-	conf->last_time_compiled = current_time
-		+ conf->program_args.time_to_compile;
 	conf->compiled++;
-	pthread_mutex_unlock(&conf->time_mutex);
-	if (conf->program_args.nb_coders > 1)
-		queue_circle_next(&(conf->scheduler_mutex->queue),
-			conf->program_args.scheduler);
 	pthread_cond_broadcast(&conf->scheduler_mutex->cond);
 	pthread_mutex_unlock(&conf->scheduler_mutex->mutex);
 }
