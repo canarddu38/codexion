@@ -5,6 +5,8 @@
 [![compilation](https://github.com/canarddu38/codexion/actions/workflows/compilation.yml/badge.svg)](https://github.com/canarddu38/codexion/actions/workflows/compilation.yml)
 [![norm](https://github.com/canarddu38/codexion/actions/workflows/norm.yml/badge.svg)](https://github.com/canarddu38/codexion/actions/workflows/norm.yml)
 
+See [codexion visualizer](https://codexion-visualizer.sacha-dev.me/) to test your projects
+
 ## Description
 
 Codexion is a multithreaded concurrency simulation written in C using POSIX threads (`pthread`).  
